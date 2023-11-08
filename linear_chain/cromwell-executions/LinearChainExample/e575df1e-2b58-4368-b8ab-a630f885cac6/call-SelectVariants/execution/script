@@ -1,0 +1,37 @@
+#!/bin/bash
+
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution
+tmpDir=$(mkdir -p "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/tmp.be035d5e" && echo "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/tmp.be035d5e")
+
+export _JAVA_OPTIONS=-Djava.io.tmpdir="$tmpDir"
+export TMPDIR="$tmpDir"
+export HOME="$HOME"
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution
+
+)
+oute575df1e="${tmpDir}/out.$$" erre575df1e="${tmpDir}/err.$$"
+mkfifo "$oute575df1e" "$erre575df1e"
+trap 'rm "$oute575df1e" "$erre575df1e"' EXIT
+touch '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution/stdout' '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution/stderr'
+tee '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution/stdout' < "$oute575df1e" &
+tee '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution/stderr' < "$erre575df1e" >&2 &
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution
+
+
+cat /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/inputs/1584609546/rawVariants.vcf > rawIndels.vcf
+)  > "$oute575df1e" 2> "$erre575df1e"
+echo $? > /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution/rc.tmp
+(
+# add a .file in every empty directory to facilitate directory delocalization on the cloud
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution
+find . -type d -exec sh -c '[ -z "$(ls -A '"'"'{}'"'"')" ] && touch '"'"'{}'"'"'/.file' \;
+)
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution
+sync
+
+
+)
+mv /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution/rc.tmp /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/e575df1e-2b58-4368-b8ab-a630f885cac6/call-SelectVariants/execution/rc

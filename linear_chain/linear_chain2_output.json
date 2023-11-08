@@ -1,0 +1,213 @@
+{
+  "workflowName": "LinearChainExample",
+  "workflowProcessingEvents": [{
+    "cromwellId": "cromid-a0fe471",
+    "description": "PickedUp",
+    "timestamp": "2023-11-08T21:01:25.614Z",
+    "cromwellVersion": "86"
+  }, {
+    "cromwellId": "cromid-a0fe471",
+    "description": "Finished",
+    "timestamp": "2023-11-08T21:02:00.677Z",
+    "cromwellVersion": "86"
+  }],
+  "actualWorkflowLanguageVersion": "1.0",
+  "submittedFiles": {
+    "workflow": "version 1.0\n\n#do not hard-code output file names. \n\nworkflow LinearChainExample {\n  input {\n    File originalBAM\n    String id\n  }\n  call MarkDuplicates { \n    input: \n      bamFile = originalBAM, \n      outputName = id + \".markDuplicates.bam\"\n  }\n  call HaplotypeCaller { \n    input: \n      bamFile = MarkDuplicates.dedupBam,\n      outputName = id + \".vcf\" \n  }\n  call SelectVariants { \n    input: \n      VCF = HaplotypeCaller.rawVCF, \n      outputName = id + \".indels.vcf\", \n      type=\"INDEL\" \n  }\n}\n\ntask MarkDuplicates {\n  input {\n    File bamFile\n    String outputName\n  }\n  # command <<<\n  #   java -jar picard.jar MarkDuplicates \\\n  #   I=~{bamFile} O=dedupped.bam M= dedupped.metrics\n  # >>>\n  command <<<\n    cat ~{bamFile} > ~{outputName}\n  >>>\n  output {\n    File dedupBam = outputName\n    #File metrics = \"dedupped.metrics\"\n  }\n}\n\ntask HaplotypeCaller {\n  input {\n    File bamFile\n    String outputName\n  }\n  # command <<<\n  #   java -jar GenomeAnalysisTK.jar \\\n  #     -T HaplotypeCaller \\\n  #     -R reference.fasta \\\n  #     -I ~{bamFile} \\\n  #     -o rawVariants.vcf\n  # >>>\n  command <<<\n    cat ~{bamFile} >  ~{outputName}\n  >>>\n  output {\n    File rawVCF = outputName\n  }\n}\n\ntask SelectVariants {\n  input {\n    File VCF\n    String type\n    String outputName\n\n  }\n  # command <<<\n  #   java -jar GenomeAnalysisTK.jar \\\n  #     -T SelectVariants \\\n  #     -R reference.fasta \\\n  #     -V ~{VCF} \\\n  #     --variantType ~{type} \\\n  #     -o rawIndels.vcf\n  # >>>\n  command <<<\n    cat ~{VCF} > ~{outputName}\n  >>>\n  output {\n    File subsetVCF = outputName\n  }\n}",
+    "root": "",
+    "options": "{\n\n}",
+    "inputs": "{\n  \"LinearChainExample.originalBAM\": \"fake.bam\",\n  \"LinearChainExample.id\": \"123_id\"\n}\n\n",
+    "workflowUrl": "linear_chain2.wdl",
+    "labels": "{}"
+  },
+  "calls": {
+    "LinearChainExample.HaplotypeCaller": [{
+      "executionStatus": "Done",
+      "stdout": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-HaplotypeCaller/execution/stdout",
+      "backendStatus": "Done",
+      "commandLine": "cat /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-HaplotypeCaller/inputs/-1281771751/123_id.markDuplicates.bam >  123_id.vcf",
+      "shardIndex": -1,
+      "outputs": {
+        "rawVCF": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-HaplotypeCaller/execution/123_id.vcf"
+      },
+      "runtimeAttributes": {
+        "maxRetries": "0",
+        "failOnStderr": "false",
+        "continueOnReturnCode": "0"
+      },
+      "callCaching": {
+        "allowResultReuse": false,
+        "effectiveCallCachingMode": "CallCachingOff"
+      },
+      "inputs": {
+        "outputName": "123_id.vcf",
+        "bamFile": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-MarkDuplicates/execution/123_id.markDuplicates.bam"
+      },
+      "returnCode": 0,
+      "jobId": "35796",
+      "backend": "Local",
+      "end": "2023-11-08T21:01:50.369Z",
+      "start": "2023-11-08T21:01:42.284Z",
+      "stderr": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-HaplotypeCaller/execution/stderr",
+      "callRoot": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-HaplotypeCaller",
+      "attempt": 1,
+      "executionEvents": [{
+        "startTime": "2023-11-08T21:01:42.285Z",
+        "description": "RequestingExecutionToken",
+        "endTime": "2023-11-08T21:01:45.592Z"
+      }, {
+        "startTime": "2023-11-08T21:01:45.592Z",
+        "description": "WaitingForValueStore",
+        "endTime": "2023-11-08T21:01:45.594Z"
+      }, {
+        "startTime": "2023-11-08T21:01:45.604Z",
+        "description": "RunningJob",
+        "endTime": "2023-11-08T21:01:50.369Z"
+      }, {
+        "startTime": "2023-11-08T21:01:42.285Z",
+        "description": "Pending",
+        "endTime": "2023-11-08T21:01:42.285Z"
+      }, {
+        "startTime": "2023-11-08T21:01:50.369Z",
+        "description": "UpdatingJobStore",
+        "endTime": "2023-11-08T21:01:50.369Z"
+      }, {
+        "startTime": "2023-11-08T21:01:45.594Z",
+        "description": "PreparingJob",
+        "endTime": "2023-11-08T21:01:45.604Z"
+      }]
+    }],
+    "LinearChainExample.SelectVariants": [{
+      "executionStatus": "Done",
+      "stdout": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-SelectVariants/execution/stdout",
+      "backendStatus": "Done",
+      "commandLine": "cat /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-SelectVariants/inputs/-1504283763/123_id.vcf > 123_id.indels.vcf",
+      "shardIndex": -1,
+      "outputs": {
+        "subsetVCF": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-SelectVariants/execution/123_id.indels.vcf"
+      },
+      "runtimeAttributes": {
+        "maxRetries": "0",
+        "failOnStderr": "false",
+        "continueOnReturnCode": "0"
+      },
+      "callCaching": {
+        "allowResultReuse": false,
+        "effectiveCallCachingMode": "CallCachingOff"
+      },
+      "inputs": {
+        "type": "INDEL",
+        "outputName": "123_id.indels.vcf",
+        "VCF": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-HaplotypeCaller/execution/123_id.vcf"
+      },
+      "returnCode": 0,
+      "jobId": "35819",
+      "backend": "Local",
+      "end": "2023-11-08T21:02:00.367Z",
+      "start": "2023-11-08T21:01:51.463Z",
+      "stderr": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-SelectVariants/execution/stderr",
+      "callRoot": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-SelectVariants",
+      "attempt": 1,
+      "executionEvents": [{
+        "startTime": "2023-11-08T21:01:55.592Z",
+        "description": "PreparingJob",
+        "endTime": "2023-11-08T21:01:55.598Z"
+      }, {
+        "startTime": "2023-11-08T21:01:55.591Z",
+        "description": "WaitingForValueStore",
+        "endTime": "2023-11-08T21:01:55.592Z"
+      }, {
+        "startTime": "2023-11-08T21:01:51.463Z",
+        "description": "Pending",
+        "endTime": "2023-11-08T21:01:51.464Z"
+      }, {
+        "startTime": "2023-11-08T21:01:55.598Z",
+        "description": "RunningJob",
+        "endTime": "2023-11-08T21:02:00.367Z"
+      }, {
+        "startTime": "2023-11-08T21:02:00.367Z",
+        "description": "UpdatingJobStore",
+        "endTime": "2023-11-08T21:02:00.367Z"
+      }, {
+        "startTime": "2023-11-08T21:01:51.464Z",
+        "description": "RequestingExecutionToken",
+        "endTime": "2023-11-08T21:01:55.591Z"
+      }]
+    }],
+    "LinearChainExample.MarkDuplicates": [{
+      "executionStatus": "Done",
+      "stdout": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-MarkDuplicates/execution/stdout",
+      "backendStatus": "Done",
+      "commandLine": "cat /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-MarkDuplicates/inputs/1253239041/fake.bam > 123_id.markDuplicates.bam",
+      "shardIndex": -1,
+      "outputs": {
+        "dedupBam": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-MarkDuplicates/execution/123_id.markDuplicates.bam"
+      },
+      "runtimeAttributes": {
+        "maxRetries": "0",
+        "failOnStderr": "false",
+        "continueOnReturnCode": "0"
+      },
+      "callCaching": {
+        "allowResultReuse": false,
+        "effectiveCallCachingMode": "CallCachingOff"
+      },
+      "inputs": {
+        "outputName": "123_id.markDuplicates.bam",
+        "bamFile": "fake.bam"
+      },
+      "returnCode": 0,
+      "jobId": "35770",
+      "backend": "Local",
+      "end": "2023-11-08T21:01:40.415Z",
+      "start": "2023-11-08T21:01:28.007Z",
+      "stderr": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-MarkDuplicates/execution/stderr",
+      "callRoot": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-MarkDuplicates",
+      "attempt": 1,
+      "executionEvents": [{
+        "startTime": "2023-11-08T21:01:40.414Z",
+        "description": "UpdatingJobStore",
+        "endTime": "2023-11-08T21:01:40.415Z"
+      }, {
+        "startTime": "2023-11-08T21:01:28.031Z",
+        "description": "RequestingExecutionToken",
+        "endTime": "2023-11-08T21:01:35.608Z"
+      }, {
+        "startTime": "2023-11-08T21:01:35.666Z",
+        "description": "RunningJob",
+        "endTime": "2023-11-08T21:01:40.414Z"
+      }, {
+        "startTime": "2023-11-08T21:01:35.608Z",
+        "description": "WaitingForValueStore",
+        "endTime": "2023-11-08T21:01:35.617Z"
+      }, {
+        "startTime": "2023-11-08T21:01:28.022Z",
+        "description": "Pending",
+        "endTime": "2023-11-08T21:01:28.031Z"
+      }, {
+        "startTime": "2023-11-08T21:01:35.617Z",
+        "description": "PreparingJob",
+        "endTime": "2023-11-08T21:01:35.666Z"
+      }]
+    }]
+  },
+  "outputs": {
+    "LinearChainExample.HaplotypeCaller.rawVCF": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-HaplotypeCaller/execution/123_id.vcf",
+    "LinearChainExample.MarkDuplicates.dedupBam": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-MarkDuplicates/execution/123_id.markDuplicates.bam",
+    "LinearChainExample.SelectVariants.subsetVCF": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de/call-SelectVariants/execution/123_id.indels.vcf"
+  },
+  "workflowRoot": "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/8c385bf2-e012-4f43-a1bd-95fba4f3c8de",
+  "actualWorkflowLanguage": "WDL",
+  "status": "Succeeded",
+  "end": "2023-11-08T21:02:00.676Z",
+  "start": "2023-11-08T21:01:25.632Z",
+  "id": "8c385bf2-e012-4f43-a1bd-95fba4f3c8de",
+  "inputs": {
+    "id": "123_id",
+    "originalBAM": "fake.bam"
+  },
+  "labels": {
+    "cromwell-workflow-id": "cromwell-8c385bf2-e012-4f43-a1bd-95fba4f3c8de"
+  },
+  "submission": "2023-11-08T21:01:25.598Z"
+}

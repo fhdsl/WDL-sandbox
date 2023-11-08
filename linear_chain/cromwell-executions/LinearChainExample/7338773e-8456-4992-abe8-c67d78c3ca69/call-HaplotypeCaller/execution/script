@@ -1,0 +1,37 @@
+#!/bin/bash
+
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution
+tmpDir=$(mkdir -p "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/tmp.fc9e20b6" && echo "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/tmp.fc9e20b6")
+
+export _JAVA_OPTIONS=-Djava.io.tmpdir="$tmpDir"
+export TMPDIR="$tmpDir"
+export HOME="$HOME"
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution
+
+)
+out7338773e="${tmpDir}/out.$$" err7338773e="${tmpDir}/err.$$"
+mkfifo "$out7338773e" "$err7338773e"
+trap 'rm "$out7338773e" "$err7338773e"' EXIT
+touch '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution/stdout' '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution/stderr'
+tee '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution/stdout' < "$out7338773e" &
+tee '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution/stderr' < "$err7338773e" >&2 &
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution
+
+
+cat /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/inputs/900552289/123_id.markDuplicates.bam >  123_id.vcf
+)  > "$out7338773e" 2> "$err7338773e"
+echo $? > /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution/rc.tmp
+(
+# add a .file in every empty directory to facilitate directory delocalization on the cloud
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution
+find . -type d -exec sh -c '[ -z "$(ls -A '"'"'{}'"'"')" ] && touch '"'"'{}'"'"'/.file' \;
+)
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution
+sync
+
+
+)
+mv /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution/rc.tmp /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-HaplotypeCaller/execution/rc

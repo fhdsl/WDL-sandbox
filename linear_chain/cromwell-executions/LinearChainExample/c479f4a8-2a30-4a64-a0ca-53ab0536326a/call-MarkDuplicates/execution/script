@@ -1,0 +1,37 @@
+#!/bin/bash
+
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution
+tmpDir=$(mkdir -p "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/tmp.3a349928" && echo "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/tmp.3a349928")
+
+export _JAVA_OPTIONS=-Djava.io.tmpdir="$tmpDir"
+export TMPDIR="$tmpDir"
+export HOME="$HOME"
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution
+
+)
+outc479f4a8="${tmpDir}/out.$$" errc479f4a8="${tmpDir}/err.$$"
+mkfifo "$outc479f4a8" "$errc479f4a8"
+trap 'rm "$outc479f4a8" "$errc479f4a8"' EXIT
+touch '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution/stdout' '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution/stderr'
+tee '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution/stdout' < "$outc479f4a8" &
+tee '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution/stderr' < "$errc479f4a8" >&2 &
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution
+
+
+cat /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/inputs/1253239041/fake.bam > 123_id.markDuplicates.bam
+)  > "$outc479f4a8" 2> "$errc479f4a8"
+echo $? > /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution/rc.tmp
+(
+# add a .file in every empty directory to facilitate directory delocalization on the cloud
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution
+find . -type d -exec sh -c '[ -z "$(ls -A '"'"'{}'"'"')" ] && touch '"'"'{}'"'"'/.file' \;
+)
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution
+sync
+
+
+)
+mv /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution/rc.tmp /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c479f4a8-2a30-4a64-a0ca-53ab0536326a/call-MarkDuplicates/execution/rc
