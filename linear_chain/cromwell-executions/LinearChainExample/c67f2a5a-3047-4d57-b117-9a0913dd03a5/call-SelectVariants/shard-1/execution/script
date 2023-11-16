@@ -1,0 +1,37 @@
+#!/bin/bash
+
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution
+tmpDir=$(mkdir -p "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/tmp.4ea3bae0" && echo "/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/tmp.4ea3bae0")
+
+export _JAVA_OPTIONS=-Djava.io.tmpdir="$tmpDir"
+export TMPDIR="$tmpDir"
+export HOME="$HOME"
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution
+
+)
+outc67f2a5a="${tmpDir}/out.$$" errc67f2a5a="${tmpDir}/err.$$"
+mkfifo "$outc67f2a5a" "$errc67f2a5a"
+trap 'rm "$outc67f2a5a" "$errc67f2a5a"' EXIT
+touch '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution/stdout' '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution/stderr'
+tee '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution/stdout' < "$outc67f2a5a" &
+tee '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution/stderr' < "$errc67f2a5a" >&2 &
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution
+
+
+cat /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/inputs/-259760602/456_id.vcf > 456_idindels.vcf
+)  > "$outc67f2a5a" 2> "$errc67f2a5a"
+echo $? > /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution/rc.tmp
+(
+# add a .file in every empty directory to facilitate directory delocalization on the cloud
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution
+find . -type d -exec sh -c '[ -z "$(ls -A '"'"'{}'"'"')" ] && touch '"'"'{}'"'"'/.file' \;
+)
+(
+cd /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution
+sync
+
+
+)
+mv /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution/rc.tmp /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-SelectVariants/shard-1/execution/rc
