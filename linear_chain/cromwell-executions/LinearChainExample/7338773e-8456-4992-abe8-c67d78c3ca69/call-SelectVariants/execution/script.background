@@ -1,3 +1,0 @@
-#!/bin/bash
-'/bin/bash' '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-SelectVariants/execution/script.submit' < /dev/null || { rc=$?; if [ "$rc" -gt "128" ]; then echo $rc; else echo -1; fi } > /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/7338773e-8456-4992-abe8-c67d78c3ca69/call-SelectVariants/execution/rc &
-echo $!

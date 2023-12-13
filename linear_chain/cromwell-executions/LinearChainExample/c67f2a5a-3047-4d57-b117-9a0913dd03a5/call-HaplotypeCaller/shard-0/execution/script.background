@@ -1,3 +1,0 @@
-#!/bin/bash
-'/bin/bash' '/Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-HaplotypeCaller/shard-0/execution/script.submit' < /dev/null || { rc=$?; if [ "$rc" -gt "128" ]; then echo $rc; else echo -1; fi } > /Users/clo2/Documents/wdl-sandbox/linear_chain/cromwell-executions/LinearChainExample/c67f2a5a-3047-4d57-b117-9a0913dd03a5/call-HaplotypeCaller/shard-0/execution/rc &
-echo $!
