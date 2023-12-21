@@ -13,9 +13,9 @@ version 1.0
 
 workflow minidata_test_alignment {
   input {
-    # Batch and cohort information
+    # Sample info
     File sampleFastq
-    String base_file_name = "SRR8618962_combined"
+    String base_file_name
     # Reference Genome information
     String ref_name
     File ref_fasta
@@ -30,7 +30,7 @@ workflow minidata_test_alignment {
     File ref_bwt
     File ref_pac
     File ref_sa
-    }
+  }
 
     # Docker containers this workflow has been designed for
     String bwadocker = "fredhutch/bwa:0.7.17"
@@ -39,7 +39,7 @@ workflow minidata_test_alignment {
     #Array[Object] batchInfo = read_objects(batchFile)
 
   #  Map reads to reference
-  call BwaMem as sampleBwaMem {
+  call BwaMem {
     input:
       input_fastq = sampleFastq,
       base_file_name = base_file_name,
@@ -54,24 +54,25 @@ workflow minidata_test_alignment {
       ref_sa = ref_sa,
       taskDocker = bwadocker
   }
+   
+  # Mark duplicates
+  call MarkDuplicatesSpark {
+    input:
+      input_bam = BwaMem.analysisReadySorted,
+      output_bam_basename = "~{base_file_name}.duplicates_marked",
+      metrics_filename = "~{base_file_name}.duplicate_metrics",
+      taskDocker = GATKdocker
+  }
+
   # Outputs that will be retained when execution is complete
   output {
-    File analysisReadyBam = "~{base_file_name}" +".aligned.bam"
-    File analysisReadyBamSorted = "~{base_file_name}" +"_sorted_query_aligned.bam"
-  }
-   
-   # Mark duplicates
-  call MarkDuplicatesSpark as MarkDuplicates {
-    input:
-      input_bam = ~{base_file_name} + "_sorted_query_aligned.bam",
-      output_bam_basename = base_file_name + ".aligned.duplicates_marked",
-      metrics_filename = base_file_name + ".duplicate_metrics",
-      taskDocker = GATKdocker
+    File alignedBamSorted = BwaMem.analysisReadySorted
+    File markDuplicates = MarkDuplicatesSpark.output_bam
   }
 # End workflow
 }
-#### TASK DEFINITIONS
 
+#### TASK DEFINITIONS
 # align to genome
 ## Currently uses -M but GATK uses -Y and no -M
 task BwaMem {
@@ -89,11 +90,12 @@ task BwaMem {
     File ref_sa
     String taskDocker
   }
+  # CL added some fake read groups for MarkDuplicates to run. 
   command <<<
     set -eo pipefail
 
     bwa mem \
-      -p -v 3 -t 16 -M \
+      -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
       ~{ref_fasta} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -n -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
