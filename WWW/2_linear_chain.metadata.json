@@ -1,0 +1,13 @@
+{
+  "minidata_test_alignment.base_file_name": "NA_12878_20k",
+  "minidata_test_alignment.sampleFastq": "/fh/scratch/delete90/_DaSL/WDL-sandbox/H06JUADXX130110.1.ATCACGAT.20k_interleaved.fastq",
+  "minidata_test_alignment.ref_name": "hg19",
+  "minidata_test_alignment.ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
+  "minidata_test_alignment.ref_fasta_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai",
+  "minidata_test_alignment.ref_dict": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict",
+  "minidata_test_alignment.ref_pac": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac",
+  "minidata_test_alignment.ref_sa": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa",
+  "minidata_test_alignment.ref_amb": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb",
+  "minidata_test_alignment.ref_ann": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann",
+  "minidata_test_alignment.ref_bwt": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt"
+}
