@@ -1,4 +1,4 @@
 {
   "minidata_test_alignment.base_file_name": "NA_12878_20k",
-  "minidata_test_alignment.sampleFastq": "/fh/scratch/delete90/_DaSL/clo2/H06JUADXX130110.1.ATCACGAT.20k_interleaved.fastq"
+  "minidata_test_alignment.sampleFastq": "/fh/scratch/delete90/_DaSL/WDL-sandbox/H06JUADXX130110.1.ATCACGAT.20k_interleaved.fastq"
 }
