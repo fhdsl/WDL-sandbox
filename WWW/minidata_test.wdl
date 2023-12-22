@@ -63,7 +63,7 @@ workflow minidata_test_alignment {
    # Mark duplicates
   call MarkDuplicatesSpark as MarkDuplicates {
     input:
-      input_bam = ~{base_file_name} + "_sorted_query_aligned.bam",
+      input_bam = base_file_name + "_sorted_query_aligned.bam",
       output_bam_basename = base_file_name + ".aligned.duplicates_marked",
       metrics_filename = base_file_name + ".duplicate_metrics",
       taskDocker = GATKdocker
