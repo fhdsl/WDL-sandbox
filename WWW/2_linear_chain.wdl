@@ -7,15 +7,15 @@ version 1.0
 ## - fastq files for reference and alternative]
 ##
 ## Output Files:
-## - An aligned bam for 1 sample
+## - An aligned, markduplicates bam for 1 sample
 ## 
-## Workflow developed by Sitapriya Moorthi @ Fred Hutch LMD: 11/22/23 for use by DaSL @ Fred Hutch.
+## Workflow developed by Sitapriya Moorthi & Chris Lo @ Fred Hutch LMD.
 
 workflow minidata_test_alignment {
   input {
-    # Batch and cohort information
-    File sampleFastq
-    String base_file_name = "SRR8618962_combined"
+    # Sample info
+    File input_fastq
+    String base_file_name
     # Reference Genome information
     String ref_name
     File ref_fasta
@@ -30,7 +30,7 @@ workflow minidata_test_alignment {
     File ref_bwt
     File ref_pac
     File ref_sa
-    }
+  }
 
     # Docker containers this workflow has been designed for
     String bwadocker = "fredhutch/bwa:0.7.17"
@@ -39,9 +39,9 @@ workflow minidata_test_alignment {
     #Array[Object] batchInfo = read_objects(batchFile)
 
   #  Map reads to reference
-  call BwaMem as sampleBwaMem {
+  call BwaMem {
     input:
-      input_fastq = sampleFastq,
+      input_fastq = input_fastq,
       base_file_name = base_file_name,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
@@ -54,24 +54,24 @@ workflow minidata_test_alignment {
       ref_sa = ref_sa,
       taskDocker = bwadocker
   }
+   
+  # Mark duplicates
+  call MarkDuplicatesSpark {
+    input:
+      input_bam = BwaMem.analysisReadySorted,
+      output_bam_basename = "~{base_file_name}.duplicates_marked",
+      taskDocker = GATKdocker
+  }
+
   # Outputs that will be retained when execution is complete
   output {
-    File analysisReadyBam = "~{base_file_name}" +".aligned.bam"
-    File analysisReadyBamSorted = "~{base_file_name}" +"_sorted_query_aligned.bam"
-  }
-   
-   # Mark duplicates
-  call MarkDuplicatesSpark as MarkDuplicates {
-    input:
-      input_bam = ~{base_file_name} + "_sorted_query_aligned.bam",
-      output_bam_basename = base_file_name + ".aligned.duplicates_marked",
-      metrics_filename = base_file_name + ".duplicate_metrics",
-      taskDocker = GATKdocker
+    File alignedBamSorted = BwaMem.sorted_bam
+    File markDuplicates = MarkDuplicatesSpark.markDuplicates_bam
   }
 # End workflow
 }
-#### TASK DEFINITIONS
 
+#### TASK DEFINITIONS
 # align to genome
 ## Currently uses -M but GATK uses -Y and no -M
 task BwaMem {
@@ -89,20 +89,20 @@ task BwaMem {
     File ref_sa
     String taskDocker
   }
+  # CL added some fake read groups for MarkDuplicates to run. 
   command <<<
     set -eo pipefail
 
     bwa mem \
-      -p -v 3 -t 16 -M \
+      -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
       ~{ref_fasta} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -n -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
 
   >>>
   output {
-    File analysisReadyBam = "~{base_file_name}.aligned.bam"
-    File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
-    
+    File bam = "~{base_file_name}.aligned.bam"
+    File sorted_bam = "~{base_file_name}.sorted_query_aligned.bam"
   }
   runtime {
     memory: "48 GB"
@@ -116,10 +116,9 @@ task MarkDuplicatesSpark {
   input {
     File input_bam
     String output_bam_basename
-    String metrics_filename
     String taskDocker
   }
-  # Later use: --verbosity WARNING
+ # Later use: --verbosity WARNING
  # Task is assuming query-sorted input so that the Secondary and Supplementary reads get marked correctly.
  # This works because the output of BWA is query-grouped and therefore, so is the output of MergeBamAlignment.
  # While query-grouped isn't actually query-sorted, it's good enough for MarkDuplicates with ASSUME_SORT_ORDER="queryname"
@@ -138,9 +137,9 @@ task MarkDuplicatesSpark {
     walltime: "6:00:00"
   }
   output {
-    File output_bam = "~{output_bam_basename}.bam"
+    File markDuplicates_bam = "~{output_bam_basename}.bam"
     File output_bai = "~{output_bam_basename}.bam.bai"
-    File duplicate_metrics = "~{metrics_filename}"
+    File duplicate_metrics = "~{output_bam_basename}.duplicate_metrics"
   }
 }
 
