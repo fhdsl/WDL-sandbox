@@ -7,14 +7,14 @@ version 1.0
 ## - fastq files for reference and alternative]
 ##
 ## Output Files:
-## - An aligned bam for 1 sample
+## - An aligned, markduplicates bam for 1 sample
 ## 
-## Workflow developed by Sitapriya Moorthi @ Fred Hutch LMD: 11/22/23 for use by DaSL @ Fred Hutch.
+## Workflow developed by Sitapriya Moorthi & Chris Lo @ Fred Hutch LMD.
 
 workflow minidata_test_alignment {
   input {
     # Sample info
-    File sampleFastq
+    File input_fastq
     String base_file_name
     # Reference Genome information
     String ref_name
@@ -41,7 +41,7 @@ workflow minidata_test_alignment {
   #  Map reads to reference
   call BwaMem {
     input:
-      input_fastq = sampleFastq,
+      input_fastq = input_fastq,
       base_file_name = base_file_name,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
@@ -54,10 +54,10 @@ workflow minidata_test_alignment {
       ref_sa = ref_sa,
       taskDocker = bwadocker
   }
-   
+
   # Outputs that will be retained when execution is complete
   output {
-    File alignedBamSorted = BwaMem.analysisReadySorted
+    File alignedBamSorted = BwaMem.sorted_bam
   }
 # End workflow
 }
@@ -92,9 +92,8 @@ task BwaMem {
 
   >>>
   output {
-    File analysisReadyBam = "~{base_file_name}.aligned.bam"
-    File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
-    
+    File bam = "~{base_file_name}.aligned.bam"
+    File sorted_bam = "~{base_file_name}.sorted_query_aligned.bam"
   }
   runtime {
     memory: "48 GB"

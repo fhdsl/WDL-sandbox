@@ -111,7 +111,6 @@ task BwaMem {
   output {
     File bam = "~{base_file_name}.aligned.bam"
     File sorted_bam = "~{base_file_name}.sorted_query_aligned.bam"
-    
   }
   runtime {
     memory: "48 GB"
