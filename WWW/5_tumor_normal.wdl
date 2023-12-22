@@ -1,5 +1,5 @@
 version 1.0
-## Testing if alignement for 1 sample will work
+## Testing if alignement for a few samples will work
 ## Samples:
 ## NCIH2172_LUNG : Cell-line with EGFR L858R mutation
 ##
@@ -37,7 +37,7 @@ struct ReferenceGenome {
 
 workflow minidata_test_alignment {
   input {
-    Sample sample
+    Array[Pair[Sample, Sample]] cohort
     ReferenceGenome refGenome
   }
 
@@ -45,36 +45,48 @@ workflow minidata_test_alignment {
   String bwadocker = "fredhutch/bwa:0.7.17"
   String GATKdocker = "broadinstitute/gatk:4.1.4.0"
   
+  scatter(individual in cohort){
 
-  #  Map reads to reference
-  call BwaMem {
-    input:
-      input_fastq = sample.fastq,
-      base_file_name = sample.id,
-      ref_fasta = refGenome.ref_fasta,
-      ref_fasta_index = refGenome.ref_fasta_index,
-      ref_dict = refGenome.ref_dict,
-      ref_alt = refGenome.ref_alt,
-      ref_amb = refGenome.ref_amb,
-      ref_ann = refGenome.ref_ann,
-      ref_bwt = refGenome.ref_bwt,
-      ref_pac = refGenome.ref_pac,
-      ref_sa = refGenome.ref_sa,
-      taskDocker = bwadocker
-  }
-   
-  # Mark duplicates
-  call MarkDuplicatesSpark {
-    input:
-      input_bam = BwaMem.sorted_bam,
-      output_bam_basename = "~{sample.id}.duplicates_marked",
-      taskDocker = GATKdocker
-  }
+    scatter(sample in [individual.left, individual.right]) {
+      #  Map reads to reference
+      call BwaMem {
+        input:
+          input_fastq = sample.fastq,
+          base_file_name = sample.id,
+          ref_fasta = refGenome.ref_fasta,
+          ref_fasta_index = refGenome.ref_fasta_index,
+          ref_dict = refGenome.ref_dict,
+          ref_alt = refGenome.ref_alt,
+          ref_amb = refGenome.ref_amb,
+          ref_ann = refGenome.ref_ann,
+          ref_bwt = refGenome.ref_bwt,
+          ref_pac = refGenome.ref_pac,
+          ref_sa = refGenome.ref_sa,
+          taskDocker = bwadocker
+      }
+
+      call MarkDuplicatesSpark {
+        input:
+          input_bam = BwaMem.sorted_bam,
+          output_bam_basename = "~{sample.id}.duplicates_marked",
+          taskDocker = GATKdocker
+      }
+     } #end of tumor/normal scatter
+
+    call MuTect2 {
+      input:
+        tumor_and_normal_bams = MarkDuplicatesSpark.markDuplicates_bam,
+        taskDocker = GATKdocker
+    }
+    
+  #End individual scatter
+  } 
 
   # Outputs that will be retained when execution is complete
   output {
-    File alignedBamSorted = BwaMem.sorted_bam
-    File markDuplicates = MarkDuplicatesSpark.markDuplicates_bam
+    #Array[File] alignedBamSorted = BwaMem.sorted_bam
+    #Array[File] markDuplicates = MarkDuplicatesSpark.markDuplicates_bam
+    Array[File] result = MuTect2.result
   }
 # End workflow
 }
@@ -148,6 +160,27 @@ task MarkDuplicatesSpark {
     File markDuplicates_bam = "~{output_bam_basename}.bam"
     File output_bai = "~{output_bam_basename}.bam.bai"
     File duplicate_metrics = "~{output_bam_basename}.duplicate_metrics"
+  }
+}
+
+task MuTect2 {
+  input {
+    Array[File] tumor_and_normal_bams
+    String taskDocker
+  }
+
+  command {
+    gatk MuTect2 --tumor ~{tumor_and_normal_bams[0]} --normal ~{tumor_and_normal_bams[1]} --output ~{tumor_and_normal_bams[0]}.mutect.output
+  }
+
+  runtime {
+    docker: taskDocker
+    memory: "48 GB"
+    cpu: 4
+    walltime: "6:00:00"
+  }
+  output {
+    File output = "~{tumor_and_normal_bams[0]}.mutect.output"
   }
 }
 

@@ -12,13 +12,13 @@ version 1.0
 ## Workflow developed by Sitapriya Moorthi & Chris Lo @ Fred Hutch LMD.
 
 # Sample info
-struct sampleInputs {
+struct Sample {
   File fastq
   String id
 }
 
 # Reference Genome information
-struct referenceGenome {
+struct ReferenceGenome {
   String ref_name
   File ref_fasta
   File ref_fasta_index
@@ -37,8 +37,8 @@ struct referenceGenome {
 
 workflow minidata_test_alignment {
   input {
-    Array[sampleInputs] allSamples
-    referenceGenome refGenome
+    Array[Sample] allSamples
+    ReferenceGenome refGenome
   }
 
   # Docker containers this workflow has been designed for
