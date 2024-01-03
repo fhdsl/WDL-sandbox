@@ -4,10 +4,10 @@ version 1.0
 ## NCIH2172_LUNG : Cell-line with EGFR L858R mutation
 ##
 ## Input requirements:
-## - fastq files for reference and alternative]
+## - fastq files for reference and alternative
 ##
 ## Output Files:
-## - An aligned bam for 1 sample
+## - An aligned, marked duplicated bam for 1 sample
 ## 
 ## Workflow developed by Sitapriya Moorthi @ Fred Hutch LMD: 11/22/23 for use by DaSL @ Fred Hutch.
 
@@ -15,53 +15,26 @@ workflow minidata_test_alignment {
   input {
     # Sample info
     File sampleFastq
-    String base_file_name
     # Reference Genome information
     String ref_name
     File ref_fasta
     File ref_fasta_index
     File ref_dict
-    # This is the .alt file from bwa-kit (https://github.com/lh3/bwa/tree/master/bwakit),
-    # listing the reference contigs that are "alternative". Leave blank in JSON for legacy
-    # references such as b37 and hg19.
-    File? ref_alt
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
   }
-
-    # Docker containers this workflow has been designed for
-    String bwadocker = "fredhutch/bwa:0.7.17"
-    String GATKdocker = "broadinstitute/gatk:4.1.4.0"
-    
-    #Array[Object] batchInfo = read_objects(batchFile)
 
   #  Map reads to reference
   call BwaMem {
     input:
       input_fastq = sampleFastq,
-      base_file_name = base_file_name,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      ref_dict = ref_dict,
-      ref_alt = ref_alt,
-      ref_amb = ref_amb,
-      ref_ann = ref_ann,
-      ref_bwt = ref_bwt,
-      ref_pac = ref_pac,
-      ref_sa = ref_sa,
-      taskDocker = bwadocker
+      ref_dict = ref_dict
   }
    
   # Mark duplicates
   call MarkDuplicatesSpark {
     input:
-      input_bam = BwaMem.analysisReadySorted,
-      output_bam_basename = "~{base_file_name}.duplicates_marked",
-      metrics_filename = "~{base_file_name}.duplicate_metrics",
-      taskDocker = GATKdocker
+      input_bam = BwaMem.analysisReadySorted
   }
 
   # Outputs that will be retained when execution is complete
@@ -78,18 +51,13 @@ workflow minidata_test_alignment {
 task BwaMem {
   input {
     File input_fastq
-    String base_file_name
     File ref_fasta
     File ref_fasta_index
     File ref_dict
-    File? ref_alt
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
-    String taskDocker
   }
+
+  String base_file_name = basename(input_fastq, ".fastq")
+
   # CL added some fake read groups for MarkDuplicates to run. 
   command <<<
     set -eo pipefail
@@ -104,45 +72,44 @@ task BwaMem {
   output {
     File analysisReadyBam = "~{base_file_name}.aligned.bam"
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
-    
   }
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: taskDocker
-    walltime: "2:00:00"
+    docker: "fredhutch/bwa:0.7.17"
   }
 }
 
 task MarkDuplicatesSpark {
   input {
     File input_bam
-    String output_bam_basename
-    String metrics_filename
-    String taskDocker
   }
+  
+  String base_file_name = basename(input_bam, ".sorted_query_aligned.bam")
+  String output_bam = "~{base_file_name}.duplicates_marked"
+  String metrics_file = "~{base_file_name}.duplicate_metrics"
+
   # Later use: --verbosity WARNING
- # Task is assuming query-sorted input so that the Secondary and Supplementary reads get marked correctly.
- # This works because the output of BWA is query-grouped and therefore, so is the output of MergeBamAlignment.
- # While query-grouped isn't actually query-sorted, it's good enough for MarkDuplicates with ASSUME_SORT_ORDER="queryname"
+  # Task is assuming query-sorted input so that the Secondary and Supplementary reads get marked correctly.
+  # This works because the output of BWA is query-grouped and therefore, so is the output of MergeBamAlignment.
+  # While query-grouped isn't actually query-sorted, it's good enough for MarkDuplicates with ASSUME_SORT_ORDER="queryname"
   command {
     gatk --java-options "-XX:+UseParallelGC -XX:ParallelGCThreads=4 -Dsamjdk.compression_level=5 -Xms32g" \
       MarkDuplicatesSpark \
       --input ~{input_bam} \
-      --output ~{output_bam_basename}.bam \
-      --metrics-file ~{metrics_filename} \
+      --output ~{output_bam} \
+      --metrics-file ~{metrics_file} \
       --optical-duplicate-pixel-distance 2500 
   }
   runtime {
-    docker: taskDocker
+    docker: "broadinstitute/gatk:4.1.4.0"
     memory: "48 GB"
     cpu: 4
-    walltime: "6:00:00"
   }
   output {
-    File output_bam = "~{output_bam_basename}.bam"
-    File output_bai = "~{output_bam_basename}.bam.bai"
-    File duplicate_metrics = "~{metrics_filename}"
+    File output_bam = "~{output_bam}"
+    File output_bai = "~{output_bam}.bai"
+    File duplicate_metrics = "~{metrics_file}"
   }
 }
 
