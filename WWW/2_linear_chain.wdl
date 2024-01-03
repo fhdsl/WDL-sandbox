@@ -16,10 +16,14 @@ workflow minidata_test_alignment {
     # Sample info
     File sampleFastq
     # Reference Genome information
-    String ref_name
     File ref_fasta
     File ref_fasta_index
     File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
   }
 
   #  Map reads to reference
@@ -28,7 +32,12 @@ workflow minidata_test_alignment {
       input_fastq = sampleFastq,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      ref_dict = ref_dict
+      ref_dict = ref_dict,
+      ref_amb = ref_amb,
+      ref_ann = ref_ann,
+      ref_bwt = ref_bwt,
+      ref_pac = ref_pac,
+      ref_sa = ref_sa
   }
    
   # Mark duplicates
@@ -54,6 +63,11 @@ task BwaMem {
     File ref_fasta
     File ref_fasta_index
     File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
   }
 
   String base_file_name = basename(input_fastq, ".fastq")
@@ -86,7 +100,7 @@ task MarkDuplicatesSpark {
   }
   
   String base_file_name = basename(input_bam, ".sorted_query_aligned.bam")
-  String output_bam = "~{base_file_name}.duplicates_marked"
+  String output_bam = "~{base_file_name}.duplicates_marked.bam"
   String metrics_file = "~{base_file_name}.duplicate_metrics"
 
   # Later use: --verbosity WARNING

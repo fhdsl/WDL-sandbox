@@ -19,6 +19,11 @@ workflow minidata_test_alignment {
     File ref_fasta
     File ref_fasta_index
     File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
   }
 
   #  Map reads to reference
@@ -27,7 +32,12 @@ workflow minidata_test_alignment {
       input_fastq = sampleFastq,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      ref_dict = ref_dict
+      ref_dict = ref_dict,
+      ref_amb = ref_amb,
+      ref_ann = ref_ann,
+      ref_bwt = ref_bwt,
+      ref_pac = ref_pac,
+      ref_sa = ref_sa
   }
    
   # Outputs that will be retained when execution is complete
@@ -46,6 +56,11 @@ task BwaMem {
     File ref_fasta
     File ref_fasta_index
     File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
