@@ -81,16 +81,26 @@ task BwaMem {
     File ref_pac
     File ref_sa
   }
-
+  
   String base_file_name = basename(input_fastq, ".fastq")
+  String ref_fasta_local = basename(ref_fasta)
 
   # CL added some fake read groups for MarkDuplicates to run. 
   command <<<
     set -eo pipefail
 
+    mv ~{ref_fasta} .
+    mv ~{ref_fasta_index} .
+    mv ~{ref_dict} .
+    mv ~{ref_amb} .
+    mv ~{ref_ann} .
+    mv ~{ref_bwt} .
+    mv ~{ref_pac} .
+    mv ~{ref_sa} .
+
     bwa mem \
       -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
-      ~{ref_fasta} ~{input_fastq} > ~{base_file_name}.sam 
+      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -n -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
 
