@@ -96,5 +96,6 @@ task BwaMem {
     memory: "48 GB"
     cpu: 16
     docker: "fredhutch/bwa:0.7.17"
+    disks: "local-disk 100 SSD"
   }
 }

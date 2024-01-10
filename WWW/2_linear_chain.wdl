@@ -103,6 +103,7 @@ task BwaMem {
     memory: "48 GB"
     cpu: 16
     docker: "fredhutch/bwa:0.7.17"
+    disks: "local-disk 100 SSD"
   }
 }
 
@@ -131,6 +132,7 @@ task MarkDuplicatesSpark {
     docker: "broadinstitute/gatk:4.1.4.0"
     memory: "48 GB"
     cpu: 4
+    disks: "local-disk 100 SSD"
   }
   output {
     File output_bam = "~{output_bam}"
