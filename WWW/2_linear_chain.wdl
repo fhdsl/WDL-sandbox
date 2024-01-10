@@ -51,6 +51,18 @@ workflow minidata_test_alignment {
     File alignedBamSorted = BwaMem.analysisReadySorted
     File markDuplicates = MarkDuplicatesSpark.output_bam
   }
+
+  parameter_meta {
+    sampleFastq: "Filepath to sample .fastq"
+    ref_fasta: "Filepath to reference genome"
+    ref_fasta_index: "Filepath to reference genome index"
+    ref_dict: "Filepath to reference genome dictionary"
+    ref_amb: "Filepath to reference genome info"
+    ref_ann: "Filepath to reference genome info"
+    ref_bwt: "Filepath to reference genome info"
+    ref_pac: "Filepath to reference genome info"
+    ref_sa: "Filepath to reference genome info"
+  }
 # End workflow
 }
 
