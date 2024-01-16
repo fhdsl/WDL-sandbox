@@ -1,0 +1,6 @@
+{
+  "Test_File_Localization.many_files": ["data/file1.txt", "data/file2.txt"],
+  "Test_File_Localization.move_this_file": "data/move_this_file.txt",
+  "Test_File_Localization.bar": "data/bar.txt",
+  "Test_File_Localization.copy_this_file": "data/copy_this_file.txt"
+}

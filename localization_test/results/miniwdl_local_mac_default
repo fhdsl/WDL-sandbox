@@ -1,0 +1,36 @@
+workdir is /mnt/miniwdl_task_container/work
+----------------------------------------------------------
+total 8.0K
+drwxrwxr-x 4 root root  128 Jan 16 21:22 .
+drwxr-xr-x 3 root root 4.0K Jan 16 21:22 ..
+drwxrwxr-x 3 root root   96 Jan 16 21:22 _miniwdl_inputs
+-rw-r--r-- 1 root root  103 Jan 16 21:22 outfile
+----------------------------------------------------------
+move_this_file: /mnt/miniwdl_task_container/work/_miniwdl_inputs/0/move_this_file.txt
+bar: /mnt/miniwdl_task_container/work/_miniwdl_inputs/0/bar.txt
+copy_this_file: /mnt/miniwdl_task_container/work/_miniwdl_inputs/0/copy_this_file.txt
+undefined: 
+array: /mnt/miniwdl_task_container/work/_miniwdl_inputs/0/file1.txt /mnt/miniwdl_task_container/work/_miniwdl_inputs/0/file2.txt
+----------------------------------------------------------
+cat bar as if it's in workdir
+cat: bar.txt: No such file or directory
+----------------------------------------------------------
+copy copy_this_file into workdir
+total 12K
+drwxrwxr-x 5 root root  160 Jan 16 21:22 .
+drwxr-xr-x 3 root root 4.0K Jan 16 21:22 ..
+drwxrwxr-x 3 root root   96 Jan 16 21:22 _miniwdl_inputs
+-rw-r--r-- 1 root root   48 Jan 16 21:22 copy_this_file.txt
+-rw-r--r-- 1 root root  964 Jan 16 21:22 outfile
+----------------------------------------------------------
+move move_this_file into workdir
+mv: cannot move '/mnt/miniwdl_task_container/work/_miniwdl_inputs/0/move_this_file.txt' to './move_this_file.txt': Device or resource busy
+total 12K
+drwxrwxr-x 5 root root  160 Jan 16 21:22 .
+drwxr-xr-x 3 root root 4.0K Jan 16 21:22 ..
+drwxrwxr-x 3 root root   96 Jan 16 21:22 _miniwdl_inputs
+-rw-r--r-- 1 root root   48 Jan 16 21:22 copy_this_file.txt
+-rw-r--r-- 1 root root 1.5K Jan 16 21:22 outfile
+----------------------------------------------------------
+directly edit the original copy_this_file
+If you can read this, copy_this_file is unedited
