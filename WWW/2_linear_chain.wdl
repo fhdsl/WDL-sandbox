@@ -123,7 +123,7 @@ task MarkDuplicatesSpark {
   }
   
   String base_file_name = basename(input_bam, ".sorted_query_aligned.bam")
-  String output_bam = "~{base_file_name}.duplicates_marked.bam"
+  String output_bam_string = "~{base_file_name}.duplicates_marked.bam"
   String metrics_file = "~{base_file_name}.duplicate_metrics"
 
   # Later use: --verbosity WARNING
@@ -134,7 +134,7 @@ task MarkDuplicatesSpark {
     gatk --java-options "-XX:+UseParallelGC -XX:ParallelGCThreads=4 -Dsamjdk.compression_level=5 -Xms32g" \
       MarkDuplicatesSpark \
       --input ~{input_bam} \
-      --output ~{output_bam} \
+      --output ~{output_bam_string} \
       --metrics-file ~{metrics_file} \
       --optical-duplicate-pixel-distance 2500 
   }
@@ -145,8 +145,8 @@ task MarkDuplicatesSpark {
     disks: "local-disk 100 SSD"
   }
   output {
-    File output_bam = "~{output_bam}"
-    File output_bai = "~{output_bam}.bai"
+    File output_bam = "~{output_bam_string}"
+    File output_bai = "~{output_bam_string}.bai"
     File duplicate_metrics = "~{metrics_file}"
   }
 }
