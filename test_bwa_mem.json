@@ -1,0 +1,6 @@
+{
+    "test_bwa_mem.sampleFastq": "/Users/aofarrel/Documents/fq/tb/SAMEA3257650_ERR2515823_1.fastq.gz",
+    "test_bwa_mem.ref_fasta": "/Users/aofarrel/Documents/tb_ref/ref/default clockwork/Ref.H37Rv/ref.fa",
+    "test_bwa_mem.ref_fasta_index": "/Users/aofarrel/Documents/tb_ref/ref/default clockwork/Ref.H37Rv/ref.fa.fai"
+}
+  
