@@ -25,8 +25,8 @@ workflow minidata_mutation_calling_v1 {
     File ref_sa
     File dbSNP_vcf
     File dbSNP_vcf_index
-    Array[File] known_indels_sites_VCFs
-    Array[File] known_indels_sites_indices
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
     File af_only_gnomad
     File af_only_gnomad_index
     File annovarTAR
@@ -133,9 +133,18 @@ task BwaMem {
   command <<<
     set -eo pipefail
 
+    mv ~{ref_fasta} .
+    mv ~{ref_fasta_index} .
+    mv ~{ref_dict} .
+    mv ~{ref_amb} .
+    mv ~{ref_ann} .
+    mv ~{ref_bwt} .
+    mv ~{ref_pac} .
+    mv ~{ref_sa} .
+
     bwa mem \
       -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
-      ~{ref_fasta} ~{input_fastq} > ~{base_file_name}.sam 
+      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
   >>>
@@ -192,27 +201,42 @@ task ApplyBaseRecalibrator {
     File input_bam_index
     File dbSNP_vcf
     File dbSNP_vcf_index
-    Array[File] known_indels_sites_VCFs
-    Array[File] known_indels_sites_indices
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
     File ref_dict
     File ref_fasta
     File ref_fasta_index
   }
   
   String base_file_name = basename(input_bam, ".duplicates_marked.bam")
+  
+  String ref_fasta_local = basename(ref_fasta)
+  String dbSNP_vcf_local = basename(dbSNP_vcf)
+  String known_indels_sites_VCFs_local = basename(known_indels_sites_VCFs)
+
 
   command <<<
   set -eo pipefail
+
+  mv ~{ref_fasta} .
+  mv ~{ref_fasta_index} .
+  mv ~{ref_dict} .
+
+  mv ~{dbSNP_vcf} .
+  mv ~{dbSNP_vcf_index} .
+
+  mv ~{known_indels_sites_VCFs} .
+  mv ~{known_indels_sites_indices} .
 
   samtools index ~{input_bam}
 
   gatk --java-options "-Xms8g" \
       BaseRecalibrator \
-      -R ~{ref_fasta} \
+      -R ~{ref_fasta_local} \
       -I ~{input_bam} \
       -O ~{base_file_name}.recal_data.csv \
-      --known-sites ~{dbSNP_vcf} \
-      --known-sites ~{sep=" --known-sites " known_indels_sites_VCFs} \
+      --known-sites ~{dbSNP_vcf_local} \
+      --known-sites ~{known_indels_sites_VCFs_local} \
       
 
   gatk --java-options "-Xms8g" \
@@ -241,9 +265,6 @@ task ApplyBaseRecalibrator {
 
 
 
-
-
-
 # Mutect 2 calling
 
 task Mutect2TumorOnly {
@@ -258,15 +279,23 @@ task Mutect2TumorOnly {
   }
 
     String base_file_name = basename(input_bam, ".recal.bam")
+    String ref_fasta_local = basename(ref_fasta)
+    String genomeReference_local = basename(genomeReference)
 
 command <<<
     set -eo pipefail
 
+    mv ~{ref_fasta} .
+    mv ~{ref_fasta_index} .
+    mv ~{ref_dict} .
+    mv ~{genomeReference} .
+    mv ~{genomeReferenceIndex} .
+
     gatk --java-options "-Xms16g" Mutect2 \
-      -R ~{ref_fasta} \
+      -R ~{ref_fasta_local} \
       -I ~{input_bam} \
       -O preliminary.vcf.gz \
-      --germline-resource ~{genomeReference} \
+      --germline-resource ~{genomeReference_local} \
      
     gatk --java-options "-Xms16g" FilterMutectCalls \
       -V preliminary.vcf.gz \
