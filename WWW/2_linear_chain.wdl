@@ -244,7 +244,7 @@ task ApplyBaseRecalibrator {
       -bqsr ~{base_file_name}.recal_data.csv \
       -I ~{input_bam} \
       -O ~{base_file_name}.recal.bam \
-      -R ~{ref_fasta} \
+      -R ~{ref_fasta_local} \
       
 
   #finds the current sort order of this bam file
@@ -300,7 +300,7 @@ command <<<
     gatk --java-options "-Xms16g" FilterMutectCalls \
       -V preliminary.vcf.gz \
       -O ~{base_file_name}.mutect2.vcf.gz \
-      -R ~{ref_fasta} \
+      -R ~{ref_fasta_local} \
       --stats preliminary.vcf.gz.stats \
      
 >>>
