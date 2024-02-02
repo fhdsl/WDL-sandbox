@@ -216,7 +216,7 @@ task ApplyBaseRecalibrator {
   mv ~{known_indels_sites_VCFs} .
   mv ~{known_indels_sites_indices} .
 
-  samtools index ~{input_bam}
+  samtools index ~{input_bam} #redundant? markduplicates already does this?
 
   gatk --java-options "-Xms8g" \
       BaseRecalibrator \
