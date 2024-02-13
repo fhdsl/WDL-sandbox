@@ -187,7 +187,7 @@ task MarkDuplicates {
   output {
     File markDuplicates_bam = "~{base_file_name}.duplicates_marked.bam"
     File markDuplicates_bai = "~{base_file_name}.duplicates_marked.bai"
-    File duplicate_metrics = "~{base_file_name}.duplicates_marked.bai"
+    File duplicate_metrics = "~{base_file_name}.duplicate_metrics"
   }
 }
 
