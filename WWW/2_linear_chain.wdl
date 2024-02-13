@@ -167,15 +167,12 @@ task MarkDuplicates {
   }
 
   String base_file_name = basename(input_bam, ".sorted_query_aligned.bam")
-  String output_bam = "~{base_file_name}.duplicates_marked.bam"
-  String output_bai = "~{base_file_name}.duplicates_marked.bai"
-  String metrics_file = "~{base_file_name}.duplicate_metrics"
 
   command <<<
     gatk MarkDuplicates \
       --INPUT ~{input_bam} \
-      --OUTPUT ~{output_bam} \
-      --METRICS_FILE ~{metrics_file} \
+      --OUTPUT ~{base_file_name}.duplicates_marked.bam \
+      --METRICS_FILE ~{base_file_name}.duplicate_metrics \
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
@@ -188,9 +185,9 @@ task MarkDuplicates {
   }
 
   output {
-    File markDuplicates_bam = "~{output_bam}"
-    File markDuplicates_bai = "~{output_bai}"
-    File duplicate_metrics = "~{metrics_file}"
+    File markDuplicates_bam = "~{base_file_name}.duplicates_marked.bam"
+    File markDuplicates_bai = "~{base_file_name}.duplicates_marked.bai"
+    File duplicate_metrics = "~{base_file_name}.duplicates_marked.bai"
   }
 }
 
