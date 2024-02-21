@@ -1,0 +1,4 @@
+{
+  "minidata_mutation_calling_v2.allSamples": ["./data/HCC4006_final.fastq", "./data/CALU1_combined_final.fastq"],
+  "minidata_mutation_calling_v2.normalFastq": "./data/MOLM13_combined_final.fastq"
+}
