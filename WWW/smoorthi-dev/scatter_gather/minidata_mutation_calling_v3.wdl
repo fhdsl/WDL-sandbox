@@ -28,14 +28,13 @@ struct referenceGenome {
 }
 
 
-workflow minidata_mutation_calling_v3 {
+workflow minidata_mutation_calling_v2 {
   input {
     Array[File] allSamples
     File normalFastq
 
     referenceGenome refGenome
     
-    Array[String] chromosomes = ["2", "7"]
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
@@ -61,37 +60,37 @@ workflow minidata_mutation_calling_v3 {
       input:
         input_bam = sampleBwaMem.analysisReadySorted
     }
-
-    call splitBambyChr as samplesplitBambyChr {
-  input:
-    bamtosplit = sampleMarkDuplicates.markDuplicates_bam,
-    baitosplit = sampleMarkDuplicates.markDuplicates_bai,
-    chromosomes = chromosomes
-  }
-
-  scatter (i in range(length(samplesplitBambyChr.indexFiles))) {
-    File subBamIndex = samplesplitBambyChr.indexFiles[i]
-    File subBam = samplesplitBambyChr.bams[i]
-    call ApplyBaseRecalibrator as sampleApplyBaseRecalibrator {
-      input_bam = subBam,
-      input_bam_index = subBamIndex,
-      dbSNP_vcf = dbSNP_vcf,
-      dbSNP_vcf_index = dbSNP_vcf_index,
-      known_indels_sites_VCFs = known_indels_sites_VCFs,
-      known_indels_sites_indices = known_indels_sites_indices,
-      refGenome = refGenome
-    }
-  }
-
-    call gatherBams {
-      input:
-        bams = sampleApplyBaseRecalibrator.recalibrated_bam,
-        sampleName = sampleBwaMem.base_file_name
-  }
     
-
+    call splitBambyChr as samplesplitBambyChr {
+      input:
+      bamtosplit = sampleMarkDuplicates.markDuplicates_bam,
+      baitosplit = sampleMarkDuplicates.markDuplicates_bai,
+      chromosomes = chromosomes
+      }
+      
+      scatter (i in range(length(samplesplitBambyChr.indexFiles))) {
+        
+        File subBamIndex = samplesplitBambyChr.indexFiles[i]
+        File subBam = samplesplitBambyChr.bams[i]
+        
+        call ApplyBaseRecalibrator as sampleApplyBaseRecalibrator {
+          input:
+          input_bam = subBam,
+          input_bam_index = subBamIndex,
+          dbSNP_vcf = dbSNP_vcf,
+          dbSNP_vcf_index = dbSNP_vcf_index,
+          known_indels_sites_VCFs = known_indels_sites_VCFs,
+          known_indels_sites_indices = known_indels_sites_indices,
+          refGenome = refGenome
+          }
+          }
+          call gatherBams {
+            input:
+            bams = sampleApplyBaseRecalibrator.recalibrated_bam,
+            sampleName = sampleBwaMem.base_file_name
+            }
     call Mutect2 {
-    input:
+      input:
       tumor_bam = sampleApplyBaseRecalibrator.recalibrated_bam,
       tumor_bam_index = sampleApplyBaseRecalibrator.recalibrated_bai,
       normal_bam = normalApplyBaseRecalibrator.recalibrated_bam,
@@ -99,17 +98,19 @@ workflow minidata_mutation_calling_v3 {
       refGenome = refGenome,
       genomeReference = af_only_gnomad,
       genomeReferenceIndex = af_only_gnomad_index
-  }
-
-  call annovar {
-    input:
+      }
+    call annovar {
+      input:
       input_vcf = Mutect2.output_vcf,
       ref_name = refGenome.ref_name,
       annovarTAR = annovarTAR,
       annovar_operation = annovar_operation,
       annovar_protocols = annovar_protocols
-  }
-}
+      }
+      }
+  
+  
+  
   
   # Do for normal sample
   call BwaMem as normalBwaMem {
@@ -188,10 +189,11 @@ task BwaMem {
       ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
-  >>>
+    >>>
 
   output {
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
+    String base_file_name = base_file_name
   }
   
   runtime {
@@ -220,47 +222,50 @@ task MarkDuplicates {
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
-  >>>
+      >>>
 
   runtime {
     docker: "broadinstitute/gatk:4.1.4.0"
     memory: "48 GB"
     cpu: 4
-  }
+    }
 
   output {
     File markDuplicates_bam = "~{output_bam}"
     File markDuplicates_bai = "~{output_bai}"
     File duplicate_metrics = "~{metrics_file}"
-  }
-}
+    }
+    }
+
+
 
 task splitBambyChr {
-  input:
+  input{
     File bamtosplit
     Array[String] chromosomes
-
+  }
+  
   command <<<
-    set -eo pipefail
-    for x in "${chromosomes[@]}"
-    do
-      # Create BAM file
-      samtools view -b -@ 3 ~{bamtosplit} ${x} > ${x}.bam
-
-      # Create index file
-      samtools index ${x}.bam
-    done
+  set -eo pipefail
+  for x in "${chromosomes[@]}"
+  do
+  # Create BAM file
+  samtools view -b -@ 3 ~{bamtosplit} ${x} > ${x}.bam
+  # Create index file
+  samtools index ${x}.bam
+  done
   >>>
-
-  output:
+  output{
     Array[File] bams = glob("*.bam")
     Array[File] indexFiles = glob("*.bam.bai")
-
+  }
+  
+  
   runtime {
     docker: "fredhutch/samtools:1.12"
     cpu: 4
-  }
-}
+    }
+    }
 
 task gatherBams {
     input {
@@ -286,7 +291,7 @@ task gatherBams {
         File bam = "~{sampleName}.merged.bam"
         File bai = "~{sampleName}.merged.bam.bai"
     }
-}
+    }
 
 
 # Base quality recalibration
@@ -342,7 +347,7 @@ task ApplyBaseRecalibrator {
 
   #finds the current sort order of this bam file
   samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > ~{base_file_name}.sortOrder.txt
->>>
+  >>>
 
   output {
     File recalibrated_bam = "~{base_file_name}.recal.bam"
@@ -356,9 +361,7 @@ task ApplyBaseRecalibrator {
   }
 }
 
-
 # Mutect 2 calling tumor-normal
-
 task Mutect2 {
   input {
     File tumor_bam
@@ -397,8 +400,7 @@ task Mutect2 {
       -O ~{base_file_name_tumor}.mutect2.vcf.gz \
       -R ~{ref_fasta_local} \
       --stats preliminary.vcf.gz.stats \
-
->>>
+      >>>
 
   runtime {
     docker: "broadinstitute/gatk:4.1.4.0"
@@ -435,7 +437,7 @@ task annovar {
       -protocol ~{annovar_protocols} \
       -operation ~{annovar_operation} \
       -nastring . -vcfinput
->>>
+      >>>
   runtime {
     docker : "perl:5.28.0"
     cpu: 1
