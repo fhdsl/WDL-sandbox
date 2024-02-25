@@ -1,5 +1,5 @@
 version 1.0
-## Notes: Testing alignment for 3 samples
+## Notes: Testing mutation calling for 3 samples
 ## 
 ## Samples:
 ## MOLM13: Normal sample
@@ -10,10 +10,10 @@ version 1.0
 ## - combined fastq files for chromosome 12 and 7 +/- 200bp around the sites of mutation only
 ##
 ## Output Files:
-## - An aligned bam for all 3 samples with mutation calling
+## - An aligned bam for all 3 samples (with duplicates marked and base quality recalibrated)
 ## 
-## Workflow developed by Sitapriya Moorthi @ Fred Hutch LMD: 01/10/24 for use by DaSL @ Fred Hutch.
-## Workflow updated on : 02/13/24 by Sitapriya Moorthi
+## Workflow developed by Sitapriya Moorthi @ Fred Hutch LMD: 02/24/24 for use by DaSL @ Fred Hutch.
+
 
 struct referenceGenome {
     File ref_fasta
@@ -28,13 +28,15 @@ struct referenceGenome {
 }
 
 
-workflow minidata_mutation_calling_v2 {
+workflow minidata_mutation_calling_v3 {
   input {
     Array[File] allSamples
     File normalFastq
 
     referenceGenome refGenome
     
+    Array[String] chromosomes = ["12", "7"]
+
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
@@ -54,12 +56,12 @@ workflow minidata_mutation_calling_v2 {
       input:
         input_fastq = sampleFastq,
         refGenome = refGenome
-    }
+        }
     
     call MarkDuplicates as sampleMarkDuplicates {
       input:
         input_bam = sampleBwaMem.analysisReadySorted
-    }
+        }
     
     call splitBambyChr as samplesplitBambyChr {
       input:
@@ -84,21 +86,24 @@ workflow minidata_mutation_calling_v2 {
           refGenome = refGenome
           }
           }
+          
           call gatherBams {
             input:
             bams = sampleApplyBaseRecalibrator.recalibrated_bam,
-            sampleName = sampleBwaMem.base_file_name
+            sampleName = sampleApplyBaseRecalibrator.base_file_name_output
             }
+            
     call Mutect2 {
       input:
-      tumor_bam = sampleApplyBaseRecalibrator.recalibrated_bam,
-      tumor_bam_index = sampleApplyBaseRecalibrator.recalibrated_bai,
+      tumor_bam = gatherBams.merged_bam,
+      tumor_bam_index = gatherBams.merged_bai,
       normal_bam = normalApplyBaseRecalibrator.recalibrated_bam,
       normal_bam_index = normalApplyBaseRecalibrator.recalibrated_bai,
       refGenome = refGenome,
       genomeReference = af_only_gnomad,
       genomeReferenceIndex = af_only_gnomad_index
       }
+   
     call annovar {
       input:
       input_vcf = Mutect2.output_vcf,
@@ -140,8 +145,12 @@ workflow minidata_mutation_calling_v2 {
     Array[File] samplealignedBamSorted = sampleBwaMem.analysisReadySorted
     Array[File] samplemarkDuplicates_bam = sampleMarkDuplicates.markDuplicates_bam
     Array[File] samplemarkDuplicates_bai = sampleMarkDuplicates.markDuplicates_bai
-    Array[File] sampleanalysisReadyBam = sampleApplyBaseRecalibrator.recalibrated_bam 
-    Array[File] sampleanalysisReadyIndex = sampleApplyBaseRecalibrator.recalibrated_bai
+    #Array[Array[File]] samplesplitBambyChr_bam = samplesplitBambyChr.bams
+    #Array[Array[File]] samplesplitBambyChr_bai = samplesplitBambyChr.indexFiles
+    Array[Array[File]] sampleanalysisReadyBam = sampleApplyBaseRecalibrator.recalibrated_bam
+    Array[Array[File]] sampleanalysisReadyIndex = sampleApplyBaseRecalibrator.recalibrated_bai 
+    Array[File] mergedBam = gatherBams.merged_bam
+    Array[File] mergeBai = gatherBams.merged_bai
     File normalalignedBamSorted = normalBwaMem.analysisReadySorted
     File normalmarkDuplicates_bam = normalMarkDuplicates.markDuplicates_bam
     File normalmarkDuplicates_bai = normalMarkDuplicates.markDuplicates_bai
@@ -193,15 +202,14 @@ task BwaMem {
 
   output {
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
-    String base_file_name = base_file_name
-  }
+    }
   
   runtime {
     memory: "48 GB"
     cpu: 16
     docker: "fredhutch/bwa:0.7.17"
   }
-}
+  }
 
 # Mark duplicates (not SPARK, for some reason that does something weird)
 task MarkDuplicates {
@@ -238,58 +246,68 @@ task MarkDuplicates {
     }
 
 
-
 task splitBambyChr {
-  input{
+  input {
     File bamtosplit
+    File baitosplit
     Array[String] chromosomes
-  }
-  
+    }
+    String base_file_name = basename(bamtosplit, "_final.duplicates_marked.bam")
   command <<<
-  set -eo pipefail
-  for x in "${chromosomes[@]}"
-  do
-  # Create BAM file
-  samtools view -b -@ 3 ~{bamtosplit} ${x} > ${x}.bam
-  # Create index file
-  samtools index ${x}.bam
-  done
+    set -eo pipefail
+    baseFileName="~{base_file_name}"
+  
+    for x in ~{sep=' ' chromosomes}; do
+    outputFile="${baseFileName}_${x}.bam"
+    samtools view -b -@ 3 ~{bamtosplit} $x > $outputFile
+
+    # Create index file
+    samtools index $outputFile
+    done
+    # List all bam and bai files created
+    ls *.bam > bam_list.txt
+    ls *.bam.bai > bai_list.txt
   >>>
-  output{
-    Array[File] bams = glob("*.bam")
-    Array[File] indexFiles = glob("*.bam.bai")
+  
+  output {
+    Array[File] bams = read_lines("bam_list.txt")
+    Array[File] indexFiles = read_lines("bai_list.txt")
   }
-  
-  
+
   runtime {
-    docker: "fredhutch/samtools:1.12"
+    docker: "fredhutch/bwa:0.7.17"
     cpu: 4
-    }
-    }
+  }
+  }
+
 
 task gatherBams {
     input {
         Array[File] bams
-        String sampleName
+        Array[String] sampleName
     }
+    # Use the first sample name to define the base name for merged files
+    String base_file_name = sampleName[0]
+
     command <<<
         set -eo pipefail
-        samtools merge -c -@3 ~{sampleName}.merged.bam ~{sep=" " bams}
-        samtools index ~{sampleName}.merged.bam
-        for bam in ~{sep=" " bams}
-        do
-            samtools index ~{bam}
-        done
+        baseFileName="~{base_file_name}"
+        samtools merge -c -@3 ${baseFileName}.merged.bam ~{sep=' ' bams}
+        samtools index ${baseFileName}.merged.bam
+        
+        # List all bam and bai files created
+        #ls *.merged.bam > merged_bam_list.txt
+        #ls *.merged.bam.bai > merged_bam_bai_list.txt
     >>>
-    
+      
     runtime {
         cpu: 4
         docker: "fredhutch/bwa:0.7.17"
     }
     
     output {
-        File bam = "~{sampleName}.merged.bam"
-        File bai = "~{sampleName}.merged.bam.bai"
+        File merged_bam = "~{base_file_name}.merged.bam"
+        File merged_bai = "~{base_file_name}.merged.bam.bai"
     }
     }
 
@@ -306,7 +324,8 @@ task ApplyBaseRecalibrator {
     referenceGenome refGenome
   }
   
-  String base_file_name = basename(input_bam, ".duplicates_marked.bam")
+  String base_file_name = basename(input_bam, ".bam")
+  String base_file_name_output_name = sub(base_file_name,"_.*", "")
   
   String ref_fasta_local = basename(refGenome.ref_fasta)
   String dbSNP_vcf_local = basename(dbSNP_vcf)
@@ -353,6 +372,7 @@ task ApplyBaseRecalibrator {
     File recalibrated_bam = "~{base_file_name}.recal.bam"
     File recalibrated_bai = "~{base_file_name}.recal.bai"
     File sortOrder = "~{base_file_name}.sortOrder.txt"
+    String base_file_name_output = base_file_name_output_name
   }
   runtime {
     memory: "36 GB"
@@ -371,7 +391,7 @@ task Mutect2 {
     referenceGenome refGenome
     File genomeReference
     File genomeReferenceIndex
-  }
+    }
 
   String base_file_name_tumor = basename(tumor_bam, ".recal.bam")
   String base_file_name_normal = basename(normal_bam, ".recal.bam")
@@ -412,7 +432,7 @@ task Mutect2 {
     File output_vcf = "${base_file_name_tumor}.mutect2.vcf.gz"
     File output_vcf_index = "${base_file_name_tumor}.mutect2.vcf.gz.tbi"
   }
-}
+  }
 
 # annotate with annovar mutation calling outputs
 task annovar {
