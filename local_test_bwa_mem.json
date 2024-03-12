@@ -1,0 +1,6 @@
+{
+    "test_bwa_mem.sampleFastq": "./data/HCC4006_final.fastq",
+    "test_bwa_mem.ref_fasta": "./data/tb/ref.fa",
+    "test_bwa_mem.ref_fasta_index": "./data/tb/ref.fa.fai"
+}
+  
