@@ -78,7 +78,6 @@ workflow mutation_calling {
       input:
         input_vcf = Mutect2TumorOnly.output_vcf,
         ref_name = ref_name,
-        annovarTAR = annovarTAR,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols
     }
@@ -95,9 +94,8 @@ workflow mutation_calling {
     File Mutect_AnnotatedVcf = annovar.output_annotated_vcf
     File Mutect_AnnotatedTable = annovar.output_annotated_table
   }
-}
 
-parameter_meta {
+  parameter_meta {
     sampleFastq: "Sample tumor .fastq (expects Illumina)"
 
     ref_fasta: "Reference genome to align reads to"
@@ -121,7 +119,10 @@ parameter_meta {
     annovar_operation: "annovar operation: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup"
 
     bwa_mem_threads: "Number of threads for bwa threading"
+  }
 }
+
+
 
 
 
